@@ -27,7 +27,7 @@ ENV MONGO_URL=mongodb://localhost:3002/meteor
 ENV ROOT_URL=http://localhost
 ENV PORT=3000
 
-COPY docker/conf/mongodb.repo /etc/yum.repos.d/mongodb.repo
+COPY conf/mongodb.repo /etc/yum.repos.d/mongodb.repo
 
 # Install ES, RabbitMQ, nginx, Kibana, python, Node, Meteor
 RUN \
@@ -84,7 +84,7 @@ RUN \
   rm -r /opt/mozdef/meteor && \
   cp /opt/mozdef/.meteor/packages/meteor-tool/$METEOR_FILE_VERSION/mt-os.linux.x86_64/scripts/admin/launch-meteor /usr/bin/meteor
 
-COPY meteor /opt/mozdef/envs/mozdef/meteor
+COPY ../meteor /opt/mozdef/envs/mozdef/meteor
 RUN chown -R mozdef:mozdef /opt/mozdef/envs/mozdef/meteor
 USER mozdef
 RUN \
@@ -94,7 +94,7 @@ RUN \
   meteor add npm-bcrypt && \
   mkdir -p /opt/mozdef/envs/meteor/mozdef
 USER root
-COPY docker/conf/settings.js /opt/mozdef/envs/mozdef/meteor/app/lib/settings.js
+COPY conf/settings.js /opt/mozdef/envs/mozdef/meteor/app/lib/settings.js
 RUN chown -R mozdef:mozdef /opt/mozdef/envs/mozdef/meteor/app/lib/settings.js
 USER mozdef
 RUN \
@@ -102,19 +102,19 @@ RUN \
   meteor build --server localhost:3002 --directory /opt/mozdef/envs/meteor/mozdef/ --allow-incompatible-update
 
 # Create python virtual environment and install dependencies
-COPY requirements.txt /opt/mozdef/envs/mozdef/requirements.txt
+COPY ../requirements.txt /opt/mozdef/envs/mozdef/requirements.txt
 RUN \
   virtualenv /opt/mozdef/envs/python && \
   source /opt/mozdef/envs/python/bin/activate && \
   pip install -r /opt/mozdef/envs/mozdef/requirements.txt
 
 USER root
-COPY docker/conf/elasticsearch.yml /opt/mozdef/envs/elasticsearch/config/
-COPY docker/conf/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
-COPY docker/conf/mongod.conf /etc/mongod.conf
-COPY docker/conf/rabbitmq.config /etc/rabbitmq/
-COPY docker/conf/enabled_plugins /etc/rabbitmq/
-COPY docker/conf/nginx.conf /etc/nginx/nginx.conf
+COPY conf/elasticsearch.yml /opt/mozdef/envs/elasticsearch/config/
+COPY conf/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+COPY conf/mongod.conf /etc/mongod.conf
+COPY conf/rabbitmq.config /etc/rabbitmq/
+COPY conf/enabled_plugins /etc/rabbitmq/
+COPY conf/nginx.conf /etc/nginx/nginx.conf
 
 COPY static /opt/mozdef/envs/mozdef/static
 COPY rest /opt/mozdef/envs/mozdef/rest
@@ -125,8 +125,8 @@ COPY cron /opt/mozdef/envs/mozdef/cron
 COPY alerts /opt/mozdef/envs/mozdef/alerts
 COPY mq /opt/mozdef/envs/mozdef/mq
 
-COPY docker/conf/config.py /opt/mozdef/envs/mozdef/alerts/lib/config.py
-COPY docker/conf/cron_entries.txt /cron_entries.txt
+COPY conf/config.py /opt/mozdef/envs/mozdef/alerts/lib/config.py
+COPY conf/cron_entries.txt /cron_entries.txt
 
 USER mozdef
 RUN crontab /cron_entries.txt
@@ -137,7 +137,7 @@ RUN \
   mkdir /opt/mozdef/envs/mozdef/config && \
   mkdir -p /opt/mozdef/envs/mozdef/docker/conf
 
-COPY docker/conf/initial_setup.py /opt/mozdef/envs/mozdef/docker/conf/initial_setup.py
+COPY conf/initial_setup.py /opt/mozdef/envs/mozdef/docker/conf/initial_setup.py
 COPY config/defaultMappingTemplate.json /opt/mozdef/envs/mozdef/config/defaultMappingTemplate.json
 
 # We have to replace the python virtualenv path until
